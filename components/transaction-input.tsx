@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { X } from "lucide-react"
+import { CalldataGenerator } from "./calldata-generator"
 
 interface TransactionInputProps {
   index: number
@@ -19,6 +20,13 @@ interface TransactionInputProps {
 }
 
 export function TransactionInput({ index, transaction, onChange, onRemove, canRemove }: TransactionInputProps) {
+  const handleCalldataGenerate = (calldata: string, tokenAddress?: string) => {
+    onChange(index, "data", calldata)
+    if (tokenAddress && !transaction.to) {
+      onChange(index, "to", tokenAddress)
+    }
+  }
+
   return (
     <Card className="p-4 bg-card border-border relative">
       {canRemove && (
@@ -66,9 +74,12 @@ export function TransactionInput({ index, transaction, onChange, onRemove, canRe
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`data-${index}`} className="text-sm text-muted-foreground">
-            Calldata (optional)
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor={`data-${index}`} className="text-sm text-muted-foreground">
+              Calldata (optional)
+            </Label>
+            <CalldataGenerator onGenerate={handleCalldataGenerate} />
+          </div>
           <Input
             id={`data-${index}`}
             placeholder="0x"
