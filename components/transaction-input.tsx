@@ -20,11 +20,8 @@ interface TransactionInputProps {
 }
 
 export function TransactionInput({ index, transaction, onChange, onRemove, canRemove }: TransactionInputProps) {
-  const handleCalldataGenerate = (calldata: string, tokenAddress?: string) => {
+  const handleCalldataGenerate = (calldata: string) => {
     onChange(index, "data", calldata)
-    if (tokenAddress && !transaction.to) {
-      onChange(index, "to", tokenAddress)
-    }
   }
 
   return (

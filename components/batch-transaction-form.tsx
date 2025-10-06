@@ -1,12 +1,19 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useAccount, useSendCalls } from "wagmi"
-import { parseEther, isAddress } from "viem"
-import { Button } from "@/components/ui/button"
-import { TransactionInput } from "./transaction-input"
-import { Plus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState } from 'react'
+import { useAccount, useSendCalls } from 'wagmi'
+import { parseEther, isAddress } from 'viem'
+import { Button } from '@/components/ui/button'
+import { TransactionInput } from './transaction-input'
+import {
+  Plus,
+  Send,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  ExternalLink,
+} from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Transaction {
   to: string
@@ -16,26 +23,33 @@ interface Transaction {
 
 export function BatchTransactionForm() {
   const { isConnected } = useAccount()
-  const { sendCalls, isPending, isSuccess, isError, error } = useSendCalls()
+  const { sendCalls, isPending, isSuccess, isError, error, data } =
+    useSendCalls()
 
-  const [transactions, setTransactions] = useState<Transaction[]>([{ to: "", value: "", data: "0x" }])
+  const [transactions, setTransactions] = useState<Transaction[]>([
+    { to: '', value: '', data: '0x' },
+  ])
 
   const handleAddTransaction = () => {
-    setTransactions([...transactions, { to: "", value: "", data: "0x" }])
+    setTransactions([...transactions, { to: '', value: '', data: '0x' }])
   }
 
   const handleRemoveTransaction = (index: number) => {
     setTransactions(transactions.filter((_, i) => i !== index))
   }
 
-  const handleTransactionChange = (index: number, field: string, value: string) => {
+  const handleTransactionChange = (
+    index: number,
+    field: string,
+    value: string
+  ) => {
     const updated = [...transactions]
     updated[index] = { ...updated[index], [field]: value }
     setTransactions(updated)
   }
 
   const isValidTransaction = (tx: Transaction) => {
-    return isAddress(tx.to) && (tx.value !== "" || tx.data !== "0x")
+    return isAddress(tx.to) && (tx.value !== '' || tx.data !== '0x')
   }
 
   const hasValidTransactions = transactions.some(isValidTransaction)
@@ -46,7 +60,8 @@ export function BatchTransactionForm() {
     const calls = validTransactions.map((tx) => ({
       to: tx.to as `0x${string}`,
       value: tx.value ? parseEther(tx.value) : undefined,
-      data: tx.data && tx.data !== "0x" ? (tx.data as `0x${string}`) : undefined,
+      data:
+        tx.data && tx.data !== '0x' ? (tx.data as `0x${string}`) : undefined,
     }))
 
     sendCalls({ calls })
@@ -67,7 +82,11 @@ export function BatchTransactionForm() {
         ))}
       </div>
 
-      <Button onClick={handleAddTransaction} variant="outline" className="w-full gap-2 border-dashed bg-transparent">
+      <Button
+        onClick={handleAddTransaction}
+        variant="outline"
+        className="w-full gap-2 border-dashed bg-transparent"
+      >
         <Plus className="h-4 w-4" />
         Add Transaction
       </Button>
@@ -94,7 +113,21 @@ export function BatchTransactionForm() {
       {isSuccess && (
         <Alert className="bg-success/10 border-success/20">
           <CheckCircle2 className="h-4 w-4 text-success" />
-          <AlertDescription className="text-success-foreground">Batch transaction sent successfully!</AlertDescription>
+          <AlertDescription className="text-success-foreground">
+            <div className="flex flex-col gap-2">
+              <span>Batch transaction sent successfully!</span>
+              {data?.id && (
+                <a
+                  href={`https://blockscan.com/tx/${data.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm underline hover:no-underline"
+                >
+                  View on block explorer <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          </AlertDescription>
         </Alert>
       )}
 
@@ -102,7 +135,7 @@ export function BatchTransactionForm() {
         <Alert className="bg-destructive/10 border-destructive/20">
           <XCircle className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-destructive-foreground">
-            {error?.message || "Failed to send batch transaction"}
+            {error?.message || 'Failed to send batch transaction'}
           </AlertDescription>
         </Alert>
       )}
