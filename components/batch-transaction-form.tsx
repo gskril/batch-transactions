@@ -22,9 +22,14 @@ interface Transaction {
 }
 
 export function BatchTransactionForm() {
-  const { isConnected } = useAccount()
+  const { isConnected, chain } = useAccount()
   const { sendCalls, isPending, isSuccess, isError, error, data } =
     useSendCalls()
+
+  // Blockscan doesn't index testnets, so link to the chain's own explorer there
+  const explorerUrl = chain?.testnet
+    ? chain.blockExplorers?.default.url
+    : 'https://blockscan.com'
 
   const [transactions, setTransactions] = useState<Transaction[]>([
     { to: '', value: '', data: '0x' },
@@ -118,7 +123,7 @@ export function BatchTransactionForm() {
               <span>Batch transaction sent successfully!</span>
               {data?.id && (
                 <a
-                  href={`https://blockscan.com/tx/${data.id}`}
+                  href={`${explorerUrl}/tx/${data.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm underline hover:no-underline"
