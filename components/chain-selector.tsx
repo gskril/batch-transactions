@@ -1,10 +1,8 @@
 "use client"
 
 import { useAccount, useSwitchChain } from "wagmi"
-import { base, mainnet, arbitrum, sepolia } from "wagmi/chains"
+import { chains } from "@/lib/wagmi-config"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const chains = [mainnet, base, arbitrum, sepolia]
 
 export function ChainSelector() {
   const { chain } = useAccount()
