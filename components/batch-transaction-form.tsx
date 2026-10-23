@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAccount, useSendCalls } from 'wagmi'
+import { useAccount, useSendCalls, useWaitForCallsStatus } from 'wagmi'
 import { parseEther, isAddress } from 'viem'
 import { Button } from '@/components/ui/button'
 import { TransactionInput } from './transaction-input'
@@ -25,6 +25,11 @@ export function BatchTransactionForm() {
   const { isConnected, chain } = useAccount()
   const { sendCalls, isPending, isSuccess, isError, error, data } =
     useSendCalls()
+  // `data.id` is the wallet's batch identifier (EIP-5792), not a transaction
+  // hash, so wait for the batch to land and read the hash from its receipt
+  const { data: callsStatus, isError: isCallsStatusError } =
+    useWaitForCallsStatus({ id: data?.id })
+  const txHash = callsStatus?.receipts?.[0]?.transactionHash
 
   // Blockscan doesn't index testnets, so link to the chain's own explorer there
   const explorerUrl = chain?.testnet
@@ -121,15 +126,25 @@ export function BatchTransactionForm() {
           <AlertDescription className="text-success-foreground">
             <div className="flex flex-col gap-2">
               <span>Batch transaction sent successfully!</span>
-              {data?.id && (
+              {txHash ? (
                 <a
-                  href={`${explorerUrl}/tx/${data.id}`}
+                  href={`${explorerUrl}/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm underline hover:no-underline"
                 >
                   View on block explorer <ExternalLink className="h-3 w-3" />
                 </a>
+              ) : isCallsStatusError ? (
+                <span className="text-sm">
+                  Couldn&apos;t confirm the transaction. Check your wallet for its
+                  status.
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-sm">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Waiting for confirmation...
+                </span>
               )}
             </div>
           </AlertDescription>
