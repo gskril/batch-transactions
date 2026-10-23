@@ -27,7 +27,8 @@ export function BatchTransactionForm() {
     useSendCalls()
   // `data.id` is the wallet's batch identifier (EIP-5792), not a transaction
   // hash, so wait for the batch to land and read the hash from its receipt
-  const { data: callsStatus } = useWaitForCallsStatus({ id: data?.id })
+  const { data: callsStatus, isError: isCallsStatusError } =
+    useWaitForCallsStatus({ id: data?.id })
   const txHash = callsStatus?.receipts?.[0]?.transactionHash
 
   // Blockscan doesn't index testnets, so link to the chain's own explorer there
@@ -134,6 +135,11 @@ export function BatchTransactionForm() {
                 >
                   View on block explorer <ExternalLink className="h-3 w-3" />
                 </a>
+              ) : isCallsStatusError ? (
+                <span className="text-sm">
+                  Couldn&apos;t confirm the transaction. Check your wallet for its
+                  status.
+                </span>
               ) : (
                 <span className="flex items-center gap-1 text-sm">
                   <Loader2 className="h-3 w-3 animate-spin" />
